@@ -17,6 +17,13 @@ test('sala rejeita apelido duplicado e oculta gabarito antes da revelação', ()
   const visible = publicRoom(room,room.participants[0].id);
   assert.equal(visible.question.options[0].correct,undefined);
   assert.equal(visible.correctOptions,undefined);
+  assert.equal(visible.answerStats,undefined);
+  room.submissions[0] = { [room.participants[0].id]: { options:['a'], correct:true, points:900 } };
+  room.revealed = true;
+  const revealed = publicRoom(room,room.participants[0].id);
+  assert.equal(revealed.answerStats.totalAnswers,1);
+  assert.equal(revealed.answerStats.correctAnswers,1);
+  assert.deepEqual(revealed.answerStats.options.map(option => option.count),[1,0]);
   rooms.delete(room.pin);
 });
 

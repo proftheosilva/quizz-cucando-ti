@@ -11,9 +11,13 @@
     "test": "node --test"
   },
   "dependencies": {
+    "@napi-rs/canvas": "^1.0.11",
+    "@tesseract.js-data/por": "^1.0.0",
+    "pdfjs-dist": "^6.4.299",
     "pdfkit": "^0.20.2",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "tesseract.js": "^7.0.0",
     "ws": "^8.18.3"
   },
   "devDependencies": {

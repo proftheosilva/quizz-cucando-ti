@@ -76,3 +76,19 @@ export async function remove(kind, id) {
   queue = queue.catch(() => {}).then(async () => writeLocal((await readLocal()).filter(row => !(row.kind === kind && row.id === id))));
   await queue;
 }
+
+export async function clearRanking() {
+  if (usingInsforge) {
+    const rows = await sql("DELETE FROM public.cucando_records WHERE kind IN ('session', 'import') RETURNING id");
+    return rows.length;
+  }
+  let removed = 0;
+  queue = queue.catch(() => {}).then(async () => {
+    const records = await readLocal();
+    const kept = records.filter(row => row.kind !== 'session' && row.kind !== 'import');
+    removed = records.length - kept.length;
+    await writeLocal(kept);
+  });
+  await queue;
+  return removed;
+}

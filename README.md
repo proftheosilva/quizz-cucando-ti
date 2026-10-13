@@ -5,10 +5,14 @@ Plataforma de gamificação educacional para turmas presenciais. O professor cri
 ## Funcionalidades
 
 - Editor de quiz com escolha simples ou múltipla, imagem por URL, tempo, pontos e penalidade por erro.
+- Importação de perguntas de PDF no editor: texto selecionável ou OCR em português para páginas escaneadas, com prévia e revisão antes de salvar.
 - Revelação opcional da imagem após a resposta, duplicação de jogos e exportação em PDF.
+- Botão **Remover** nos cartões de jogos da página inicial e de **Meus jogos**, com confirmação.
 - Matching game de conceitos com pontuação por acerto e perda por tentativa incorreta.
 - Sala ao vivo com PIN de seis dígitos, apelido, avatar aleatório, lobby, revelação e pódio.
+- Revelação automática quando todos respondem ou o tempo termina, com gráfico de barras por alternativa nas telas do professor e do aluno.
 - Histórico de sessões e ranking acumulado por apelido.
+- Remoção de sala pelo menu e botão para zerar o ranking, ambos com confirmação.
 - Prévia de dados externos por IA via OpenRouter, com confirmação antes da importação.
 - Painel administrativo protegido por login e senha. Alunos não precisam de cadastro.
 
@@ -68,10 +72,15 @@ O jogo de demonstração **Demo · Fundamentos de IA Generativa** foi salvo na i
 ## Como conduzir uma partida
 
 1. Entre no painel, crie ou edite um jogo em **Meus jogos**.
+   Para aproveitar um PDF, clique em **Enviar PDF**, confira a prévia e adicione as perguntas ao editor. Marque manualmente o gabarito quando a extração não o identificar.
 2. Clique em **Iniciar sala** e compartilhe o PIN de seis dígitos.
 3. Os alunos abrem `/jogar`, inserem o PIN e escolhem um apelido. O avatar é atribuído automaticamente.
-4. No lobby, clique em **Começar jogo**. Em quiz, revele a resposta e avance pelas perguntas; em matching, encerre quando a turma terminar.
+4. No lobby, clique em **Começar jogo**. No quiz, a resposta e o gráfico aparecem automaticamente após todos responderem ou o tempo terminar; então avance para a próxima pergunta. Em matching, encerre quando a turma terminar.
 5. Consulte o pódio, o histórico e o ranking.
+
+Ao encerrar, o aluno pode clicar em **Entrar com outro PIN**. Atualizar `/jogar` depois do fim também retorna à entrada do PIN.
+
+**Remover sala** desconecta os participantes e descarta pontos ainda não salvos. **Zerar ranking** apaga permanentemente o histórico de sessões e as importações de pontos, mas preserva os jogos. A limpeza exige que não haja sala ativa.
 
 ## Testes
 
@@ -80,7 +89,7 @@ npm test
 npm run build
 ```
 
-Os testes cobrem cálculo de pontos, proteção do gabarito, apelido duplicado, duplicação, PDF e fluxo de API com sala, resposta, resultado e ranking.
+Os testes cobrem cálculo de pontos, proteção do gabarito, apelido duplicado, duplicação, importação de PDF com texto e OCR, remoção de sala, limpeza de ranking e fluxo de API.
 
 ## Segurança e limites atuais
 
@@ -89,6 +98,6 @@ Os testes cobrem cálculo de pontos, proteção do gabarito, apelido duplicado, 
 - O ranking soma resultados pelo **apelido** normalizado. Alunos distintos com o mesmo apelido em datas diferentes podem aparecer como uma pessoa; combine uma convenção de apelidos com a turma.
 - Use HTTPS e `SESSION_SECRET` dedicado ao publicar. O cookie administrativo passa a usar `Secure` quando a requisição chega por HTTPS.
 - Os dados enviados à análise IA são transmitidos ao OpenRouter. Revise e evite dados pessoais desnecessários.
-- A análise aceita texto colado ou arquivo `.txt`, `.csv`, `.json` e `.md` até 200 KB. PDF e imagem exigem extração prévia do texto.
+- A análise de ranking com IA aceita texto colado ou arquivo `.txt`, `.csv`, `.json` e `.md` até 200 KB. A importação de perguntas por PDF é uma função separada e local do servidor, limitada a 10 MB e 20 páginas.
 
 © 2026 Cucando TI · Todos os direitos reservados.

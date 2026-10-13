@@ -38,6 +38,11 @@ export function publicRoom(room, participantId = null, admin = false) {
   const question = room.game.questions?.[room.current];
   const visibleQuestion = question && (admin || room.revealed) ? question : question && { ...question, options: question.options?.map(({ id, text }) => ({ id, text })) };
   const submissions = room.submissions[room.current] || {};
+  const answerStats = room.revealed && question ? {
+    totalAnswers: Object.keys(submissions).length,
+    correctAnswers: Object.values(submissions).filter(answer => answer.correct).length,
+    options: question.options.map(option => ({ id: option.id, count: Object.values(submissions).filter(answer => answer.options?.includes(option.id)).length, correct: option.correct }))
+  } : undefined;
   return {
     pin: room.pin, title: room.game.title, type: room.game.type, phase: room.phase,
     current: room.current, total: room.game.questions?.length || room.game.pairs?.length || 0,
@@ -47,6 +52,7 @@ export function publicRoom(room, participantId = null, admin = false) {
     mySubmission: participantId ? submissions[participantId] || null : null,
     myResolved: participantId && room.game.type === 'matching' ? room.events.filter(e => e.participantId === participantId && e.correct).map(e => e.pairId) : undefined,
     submissionsCount: Object.keys(submissions).length,
+    answerStats,
     correctOptions: room.revealed || admin ? question?.options?.filter(o => o.correct).map(o => o.id) : undefined
   };
 }
