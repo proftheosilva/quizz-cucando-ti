@@ -1,0 +1,38 @@
+# SPEC inicial — Quiz Cucando TI
+
+**Estado:** arquitetura proposta, sujeita à validação do layout e das regras de jogo.
+
+## Estrutura implementada
+```text
+src/           React + Vite; painel e entrada do aluno
+server/        Node.js; API HTTP, WebSocket, regras e persistência
+test/          testes de regras e fluxo de API
+public/        logos oficiais
+```
+
+## Fluxo de dados
+Navegador → API Node.js → Insforge Postgres. A comunicação da sala usa WebSocket com o servidor como autoridade sobre PIN, estado, relógio, correção e pontos. O backend chama OpenRouter apenas no fluxo de análise do administrador. Segredos ficam exclusivamente no servidor. Se o Insforge estiver indisponível, o servidor usa arquivo JSON local e avisa no console.
+
+## Módulos e rotas previstos
+- `POST /auth/login`, `POST /auth/logout`, `GET /auth/me`: sessão administrativa com cookie `HttpOnly`, `Secure` em produção e limitação de tentativas.
+- `GET/POST/PATCH /games`, `GET /games/:id`, `POST /games/:id/publish`: catálogo e edição.
+- `POST /rooms`, `GET /rooms/:pin`, `POST /rooms/:pin/join`: criação e entrada.
+- Eventos de sala: `participant_joined`, `game_started`, `question_opened`, `answer_submitted`, `question_closed`, `score_revealed`, `game_finished`.
+- `GET /rankings`, `GET /results/:sessionId`: histórico e classificação.
+- `POST /imports/preview`, `POST /imports/commit`: prévia, validação e confirmação da análise externa.
+
+## Dados previstos
+Tabela `cucando_records` com `kind` (`game`, `session`, `import`) e `payload` JSONB. Os resultados incluem participantes e eventos de pontuação. O apelido é nome de exibição, não identidade confiável entre turmas.
+
+## Insforge
+A instância configurada usa `PROJECT_URL` e a chave administrativa `INSFORGE_ADMIN_API_KEY` na rota `POST /api/database/advance/rawsql` com parâmetros. A migração `20261013000100` criou a tabela com RLS e sem políticas públicas. A chave `uak_` existente não autenticou nas rotas de banco testadas. Referência: https://docs.insforge.dev/sdks/rest/database
+
+## Configuração prevista
+Variáveis usadas: `PROJECT_URL` (ou `INSFORGE_BASE_URL`), `INSFORGE_ADMIN_API_KEY`, `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `LOGIN_ADMIN`, `PASSWORD_ADMIN`, `SESSION_SECRET`. O `.env` fica fora do Git; `.env.example` não contém segredos.
+
+## Regras técnicas
+- Validar entrada e tamanho de texto no servidor; limitar requisições de login, entrada e resposta.
+- Usar tempo do servidor e idempotência por participante/pergunta para impedir respostas duplicadas.
+- A sala mantém estado transitório em memória no primeiro ciclo; persistir resultados e eventos. Para múltiplas instâncias, acrescentar camada compartilhada de estado/pub-sub.
+- Importação por IA retorna dados estruturados com indicação de incerteza; nenhuma alteração é gravada sem confirmação do professor.
+- Testes posteriores cobrirão pontuação, PIN, reconexão, permissões e persistência.
