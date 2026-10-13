@@ -24,11 +24,15 @@ export function parseQuestions(text) {
   };
   for (const line of lines) {
     if (line === keyLine) { push(); break; }
+    if (current?.options.length >= 2 && /^(?:Professor\b|Alternativa correta marcada\b|©)/i.test(line)) { push(); break; }
     const heading = line.match(/^(?:(?:F[ÁA]CIL|INTERMEDI[ÁA]RIA|DIF[ÍI]CIL)\s+)?QUEST[ÃA]O\s*0?(\d{1,2})(?:\s*[.):-]\s*(.*))?$/i);
+    const progress = line.match(/^(?:(?:F[ÁA]CIL|INTERMEDI[ÁA]RIA|DIF[ÍI]CIL)\s+)?0?(\d{1,2})\s*\/\s*\d{1,2}(?:\s+(.+))?$/i);
+    const difficulty = line.match(/^0?(\d{1,2})\s*\[[^\]]+\]\s*(.+)$/i);
     const question = line.match(/^(\d{1,2})\s*[.):-]\s*(.+)/i);
-    const alternative = line.match(/^([A-F])\s*[).:-]\s*(.+)/i);
+    const alternative = line.match(/^([A-F])\s*[.):\-]\s*(.+)/i);
     const answer = line.match(/^(?:gabarito|resposta(?:\s+correta)?|alternativa\s+correta)\s*[:：-]?\s*([A-F])\b/i);
-    if (heading || question) { push(); current = { number: Number((heading || question)[1]), text: heading ? heading[2] || '' : question[2], options: [], correctLetter: null }; awaitingQuestion = !current.text; continue; }
+    const start = heading || progress || difficulty || question;
+    if (start) { push(); current = { number: Number(start[1]), text: start[2] || '', options: [], correctLetter: null }; awaitingQuestion = !current.text; continue; }
     if (!current) continue;
     if (awaitingQuestion) { current.text = line; awaitingQuestion = false; continue; }
     if (alternative) {
