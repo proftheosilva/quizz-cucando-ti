@@ -46,6 +46,7 @@ test('fluxo de quiz: login, sala, resposta, pódio e ranking', { timeout: 20000 
     const login = await call('/api/auth/login','POST',{login:'teste',password:'senha-de-teste'});
     assert.equal(login.response.status,200);
     const cookie = login.response.headers.get('set-cookie').split(';')[0];
+    assert.equal((await call('/api/auth/me','GET',undefined,cookie)).data.canManageTeachers,true);
     const teacher = await call('/api/teachers','POST',{name:'Professora Nova',email:'nova@example.com',password:'senha-professora-2026',confirmPassword:'senha-professora-2026'},cookie);
     assert.equal(teacher.response.status,201);
     assert.equal(Object.hasOwn(teacher.data,'passwordHash'),false);
@@ -53,7 +54,10 @@ test('fluxo de quiz: login, sala, resposta, pódio e ranking', { timeout: 20000 
     const teacherLogin = await call('/api/auth/login','POST',{login:'NOVA@example.com',password:'senha-professora-2026'});
     assert.equal(teacherLogin.response.status,200);
     const teacherCookie = teacherLogin.response.headers.get('set-cookie').split(';')[0];
-    assert.equal((await call('/api/auth/me','GET',undefined,teacherCookie)).data.name,'Professora Nova');
+    const teacherProfile = await call('/api/auth/me','GET',undefined,teacherCookie);
+    assert.equal(teacherProfile.data.name,'Professora Nova');
+    assert.equal(teacherProfile.data.canManageTeachers,false);
+    assert.equal((await call('/api/teachers','POST',{name:'Terceira Professora',email:'terceira@example.com',password:'senha-professora-2026',confirmPassword:'senha-professora-2026'},teacherCookie)).response.status,403);
     assert.deepEqual((await call('/api/catalog','GET',undefined,teacherCookie)).data,[]);
     const teacherClass = await call('/api/catalog','POST',{kind:'class',name:'Turma Independente'},teacherCookie);
     assert.equal(teacherClass.response.status,201);

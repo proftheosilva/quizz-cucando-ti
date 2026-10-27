@@ -14,7 +14,7 @@ public/        logos oficiais
 Navegador → API Node.js → Insforge Postgres. A comunicação da sala usa WebSocket com o servidor como autoridade sobre PIN, estado, relógio, correção e pontos. O backend chama OpenRouter apenas no fluxo de análise do administrador. Segredos ficam exclusivamente no servidor. Se o Insforge estiver indisponível, o servidor usa arquivo JSON local e avisa no console. Dados de cada professor recebem `ownerId`; registros antigos sem esse campo pertencem à conta administrativa legada.
 
 ## Módulos e rotas previstos
-- `POST /auth/login`, `POST /auth/logout`, `GET /auth/me`, `POST /teachers`: sessão administrativa com cookie `HttpOnly`, `Secure` em produção e limitação de tentativas; novas contas docentes guardam hash scrypt.
+- `POST /auth/login`, `POST /auth/logout`, `GET /auth/me`, `POST /teachers`: sessão administrativa com cookie `HttpOnly`, `Secure` em produção e limitação de tentativas; novas contas docentes guardam hash scrypt. Apenas a conta administrativa original (`legacy-admin`) pode chamar `POST /teachers`; `/auth/me` informa `canManageTeachers` para a interface mostrar o controle autorizado.
 - `GET/POST/PATCH /games`, `GET /games/:id`, `POST /games/:id/publish`: catálogo e edição.
 - `POST /rooms`, `GET /rooms/:pin`, `POST /rooms/:pin/join`: criação e entrada.
 - Eventos de sala: `participant_joined`, `game_started`, `question_opened`, `answer_submitted`, `question_closed`, `score_revealed`, `game_finished`.

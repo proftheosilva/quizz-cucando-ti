@@ -26,6 +26,7 @@ function verify(value) {
   try { const result = JSON.parse(Buffer.from(payload, 'base64url').toString()); return result.exp > Date.now() ? result : null; } catch { return null; }
 }
 function admin(req) { const session = verify(cookie(req).ct_admin); if (!session || session.role !== 'admin') fail(401, 'Entre no painel do professor.'); return { ...session, teacherId: session.teacherId || LEGACY_OWNER }; }
+function requireTeacherManager(session) { if (session.teacherId !== LEGACY_OWNER) fail(403, 'Somente a conta administradora pode adicionar professores.'); }
 function assertRoomOwner(session, room) { if ((room.ownerId || LEGACY_OWNER) !== session.teacherId) fail(404, 'Sala não encontrada.'); }
 function player(req, pin) { const session = verify(req.headers.authorization?.replace(/^Bearer /, '')); if (!session || session.role !== 'player' || session.pin !== pin) fail(401, 'Entre novamente na sala.'); return session; }
 async function body(req) {
@@ -130,7 +131,8 @@ async function handle(req, res) {
     return json(res, 200, { ok: true });
   }
   if (req.method === 'POST' && pathname === '/api/teachers') {
-    admin(req);
+    const session = admin(req);
+    requireTeacherManager(session);
     const data = await body(req);
     const name = clean(data.name, 120).replace(/\s+/g, ' '), email = normalizeEmail(data.email);
     if (name.length < 3) fail(400, 'Informe o nome completo do professor.');
@@ -143,7 +145,7 @@ async function handle(req, res) {
     return json(res, 201, { id: item.id, name: item.name, email: item.email, createdAt: item.createdAt });
   }
   if (req.method === 'POST' && pathname === '/api/auth/logout') { res.setHeader('Set-Cookie', 'ct_admin=; HttpOnly; SameSite=Strict; Path=/api; Max-Age=0'); return json(res, 200, { ok: true }); }
-  if (req.method === 'GET' && pathname === '/api/auth/me') { const session = admin(req); return json(res, 200, { name: session.name || config.admin || 'Professor', email: session.email || config.admin || '' }); }
+  if (req.method === 'GET' && pathname === '/api/auth/me') { const session = admin(req); return json(res, 200, { name: session.name || config.admin || 'Professor', email: session.email || config.admin || '', canManageTeachers: session.teacherId === LEGACY_OWNER }); }
   if (req.method === 'POST' && pathname === '/api/auth/password') {
     const session = admin(req);
     const data = await body(req);

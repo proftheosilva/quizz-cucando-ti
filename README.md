@@ -22,7 +22,7 @@ Plataforma de gamificação educacional para turmas presenciais. O professor cri
 - Ranking acumulado por pontos mantido como classificação competitiva separada dos indicadores de aprendizagem.
 - Remoção de sala pelo menu e botão para zerar o ranking, ambos com confirmação.
 - Prévia de dados externos por IA via OpenRouter, com confirmação antes da importação.
-- Painel administrativo com contas individuais de professor. A pessoa administradora pode usar **Adicionar professor** no rodapé da barra lateral; cada docente acessa seu próprio espaço de jogos, turmas, alunos, salas, resultados, importações e ranking. Senhas de novas contas são armazenadas com hash scrypt; cada professor também pode alterar a própria senha. Alunos não precisam de conta.
+- Painel administrativo com contas individuais de professor. Somente a conta administrativa original pode usar **Adicionar professor** no rodapé da barra lateral e cadastrar docentes; as demais contas não veem essa opção e a API também bloqueia a tentativa. Cada docente acessa seu próprio espaço de jogos, turmas, alunos, salas, resultados, importações e ranking. Senhas de novas contas são armazenadas com hash scrypt; cada professor também pode alterar a própria senha. Alunos não precisam de conta.
 
 ## Requisitos
 
@@ -91,9 +91,10 @@ Também há o quiz de demonstração **Quiz de Exemplo · Cultura Digital**, com
 
 Ao encerrar, o aluno pode clicar em **Entrar com outro PIN**. Atualizar `/jogar` depois do fim também retorna à entrada do PIN.
 
-### Alterar a senha do professor
+### Contas docentes e segurança
 
-No rodapé da barra lateral, **Adicionar professor** abre um formulário com nome completo, e-mail, senha e confirmação. Senhas têm pelo menos 12 caracteres e são armazenadas com scrypt. A nova conta pode entrar com o e-mail e administrar seu espaço separado. Cada docente também pode usar **Alterar senha**, informar a senha atual e escolher uma nova; as sessões administrativas são invalidadas após a alteração.
+
+No rodapé da barra lateral, a conta administrativa original vê **Adicionar professor**, que abre um formulário com nome completo, e-mail, senha e confirmação. Somente essa conta pode cadastrar docentes; o servidor impõe a restrição mesmo que alguém tente chamar a API diretamente. Senhas têm pelo menos 12 caracteres e são armazenadas com scrypt. A nova conta pode entrar com o e-mail e administrar seu espaço separado. Cada docente também pode usar **Alterar senha**, informar a senha atual e escolher uma nova; as sessões administrativas são invalidadas após a alteração.
 
 **Remover sala** desconecta os participantes e descarta pontos ainda não salvos. **Zerar ranking** apaga permanentemente o histórico de sessões e as importações de pontos, mas preserva os jogos. A limpeza exige que não haja sala ativa.
 
